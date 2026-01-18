@@ -1,0 +1,105 @@
+'use client';
+
+import React, { useState } from 'react';
+import styles from './ErrorResolverView.module.css';
+
+const ErrorResolverView = () => {
+    const [searchCode, setSearchCode] = useState('');
+    const [result, setResult] = useState(null);
+    const [isSearched, setIsSearched] = useState(false);
+
+    // DUMMY DATA - Remove later after backend is connected
+    const DUMMY_ERRORS = [
+        {
+            code: "ERR_500",
+            description: "Internal Server Error",
+            causes: "Unexpected condition was encountered on the server.",
+            solution: "Restart the backend server and check error logs in FastAPI.",
+        },
+        {
+            code: "ERR_404",
+            description: "Record Not Found",
+            causes: "The requested error code does not exist in the Excel database.",
+            solution: "Verify the error code from the Excel sheet and try again.",
+        },
+        {
+            code: "XLS_001",
+            description: "Excel Read Error",
+            causes: "Backend failed to read the Excel file structure.",
+            solution: "Ensure the Excel file is not open in another program and its headers match.",
+        }
+    ];
+
+    const handleSearch = (e) => {
+        e.preventDefault();
+        setIsSearched(true);
+
+        /* 
+          BACKEND INTEGRATION POINT:
+          Replace the logic below with your FastAPI call.
+          Example:
+          const response = await fetch(`http://localhost:8000/error-details?code=${searchCode}`);
+          const data = await response.json();
+          setResult(data);
+        */
+
+        const found = DUMMY_ERRORS.find(
+            (err) => err.code.toUpperCase() === searchCode.trim().toUpperCase()
+        );
+        setResult(found || null);
+    };
+
+    return (
+        <div className={styles.viewContainer}>
+            <div className={styles.header}>
+                <h1 className={styles.title}>Error <span style={{ color: '#3b82f6' }}>Resolver</span></h1>
+                <p className={styles.subtitle}>Locate solutions and causes for system errors instantly.</p>
+            </div>
+
+            <form onSubmit={handleSearch} className={styles.searchBox}>
+                <input
+                    type="text"
+                    className={styles.input}
+                    placeholder="Type error code (e.g. ERR_500)..."
+                    value={searchCode}
+                    onChange={(e) => setSearchCode(e.target.value)}
+                />
+                <button type="submit" className={styles.searchButton}>Search</button>
+            </form>
+
+            {isSearched && (
+                <div className={styles.resultArea}>
+                    {result ? (
+                        <div className={styles.resultCard}>
+                            <h2 className={styles.errorCode}>{result.code}</h2>
+
+                            <div className={styles.section}>
+                                <span className={styles.label}>Description</span>
+                                <p className={styles.value}>{result.description}</p>
+                            </div>
+
+                            <div className={styles.section}>
+                                <span className={styles.label}>What causes this?</span>
+                                <p className={styles.value}>{result.causes}</p>
+                            </div>
+
+                            <div className={styles.section}>
+                                <span className={styles.label}>How to resolve?</span>
+                                <div className={styles.solutionBox}>
+                                    <p className={styles.value}>{result.solution}</p>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className={styles.notFound}>
+                            <h3>Record Not Found</h3>
+                            <p>The error code "{searchCode}" was not found in our database.</p>
+                        </div>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+};
+
+export default ErrorResolverView;
